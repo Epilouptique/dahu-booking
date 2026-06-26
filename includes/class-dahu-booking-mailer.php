@@ -2,7 +2,7 @@
 /**
  * Gère l'envoi de tous les emails liés aux réservations.
  * Utilise wp_mail(), donc passe automatiquement par le SMTP configuré
- * (FluentSMTP / WP Mail SMTP avec OVH).
+ * (FluentSMTP, WP Mail SMTP, ou le mailer par défaut du serveur).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,7 +13,7 @@ class Dahu_Booking_Mailer {
 
     /**
      * Envoie les deux emails liés à une nouvelle réservation :
-     * confirmation au client + notification à l'admin (Hugo).
+     * confirmation au client + notification à l'admin du site.
      */
     public static function send_booking_emails( $booking ) {
         self::send_client_confirmation( $booking );
@@ -25,7 +25,8 @@ class Dahu_Booking_Mailer {
      */
     public static function send_client_confirmation( $booking ) {
         $to      = $booking['client_email'];
-        $subject = 'Votre rendez-vous chez Dahu-Concept est confirmé';
+        $site_name = get_bloginfo( 'name' );
+        $subject = sprintf( 'Votre rendez-vous chez %s est confirmé', $site_name );
 
         $date_fr   = self::format_date_fr( $booking['booking_date'] );
         $heure     = substr( $booking['booking_time'], 0, 5 );
@@ -45,8 +46,7 @@ class Dahu_Booking_Mailer {
         $body .= "Besoin de modifier ou d'annuler ce rendez-vous ?\n";
         $body .= $manage_url . "\n\n";
         $body .= "À très vite,\n";
-        $body .= "Hugo — Dahu-Concept\n";
-        $body .= "contact@dahu-concept.fr";
+        $body .= self::get_signature();
 
         $headers = array( 'Content-Type: text/plain; charset=UTF-8' );
 
@@ -54,7 +54,7 @@ class Dahu_Booking_Mailer {
     }
 
     /**
-     * Email de notification envoyé à l'admin (Hugo) à chaque nouvelle réservation.
+     * Email de notification envoyé à l'admin du site à chaque nouvelle réservation.
      */
     public static function send_admin_notification( $booking ) {
         $to      = get_option( 'dahu_booking_admin_email', get_option( 'admin_email' ) );
@@ -96,13 +96,13 @@ class Dahu_Booking_Mailer {
         $body .= "Besoin de le modifier à nouveau ou de l'annuler ?\n";
         $body .= $manage_url . "\n\n";
         $body .= "À très vite,\n";
-        $body .= "Hugo — Dahu-Concept";
+        $body .= self::get_signature();
 
         $headers = array( 'Content-Type: text/plain; charset=UTF-8' );
 
         wp_mail( $to, $subject, $body, $headers );
 
-        // Notifie aussi Hugo du changement
+        // Notifie aussi l'admin du changement
         $admin_to = get_option( 'dahu_booking_admin_email', get_option( 'admin_email' ) );
         $admin_subject = 'Rendez-vous déplacé : ' . $booking['client_name'];
         $admin_body  = $booking['client_name'] . " a déplacé son rendez-vous.\n\n";
@@ -124,13 +124,13 @@ class Dahu_Booking_Mailer {
         $body  = "Bonjour " . $booking['client_name'] . ",\n\n";
         $body .= "Votre rendez-vous du " . $date_fr . " à " . $heure . " a bien été annulé.\n\n";
         $body .= "N'hésitez pas à reprendre un nouveau créneau quand vous le souhaitez.\n\n";
-        $body .= "Hugo — Dahu-Concept";
+        $body .= self::get_signature();
 
         $headers = array( 'Content-Type: text/plain; charset=UTF-8' );
 
         wp_mail( $to, $subject, $body, $headers );
 
-        // Notifie Hugo
+        // Notifie l'admin
         $admin_to = get_option( 'dahu_booking_admin_email', get_option( 'admin_email' ) );
         $admin_subject = 'Rendez-vous annulé : ' . $booking['client_name'];
         $admin_body = $booking['client_name'] . " a annulé son rendez-vous du " . $date_fr . " à " . $heure . ".";
@@ -142,6 +142,18 @@ class Dahu_Booking_Mailer {
     // ============================================
 
     /**
+     * Construit la signature des emails envoyés au client,
+     * basée sur le nom du site WordPress (configurable dans Réglages > Général)
+     * et l'email de notification défini dans les réglages du plugin.
+     */
+    private static function get_signature() {
+        $site_name  = get_bloginfo( 'name' );
+        $admin_email = get_option( 'dahu_booking_admin_email', get_option( 'admin_email' ) );
+
+        return $site_name . "\n" . $admin_email;
+    }
+
+    /**
      * Formate une date SQL (YYYY-MM-DD) en français lisible.
      * Ex: "mardi 23 juin 2026"
      */
@@ -151,10 +163,10 @@ class Dahu_Booking_Mailer {
         $jours = array( 'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi' );
         $mois  = array( '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre' );
 
-        $jour_semaine = $jours[ date( 'w', $timestamp ) ];
-        $jour         = date( 'j', $timestamp );
-        $mois_nom     = $mois[ (int) date( 'n', $timestamp ) ];
-        $annee        = date( 'Y', $timestamp );
+        $jour_semaine = $jours[ wp_date( 'w', $timestamp ) ];
+        $jour         = wp_date( 'j', $timestamp );
+        $mois_nom     = $mois[ (int) wp_date( 'n', $timestamp ) ];
+        $annee        = wp_date( 'Y', $timestamp );
 
         return "$jour_semaine $jour $mois_nom $annee";
     }

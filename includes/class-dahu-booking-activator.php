@@ -100,12 +100,12 @@ class Dahu_Booking_Activator {
 
         // Lieu du rendez-vous (affiché dans le récap)
         if ( false === get_option( 'dahu_booking_location' ) ) {
-            update_option( 'dahu_booking_location', '3c route des Fauvins, 05000 GAP' );
+            update_option( 'dahu_booking_location', '' );
         }
 
         // Titre de l'événement
         if ( false === get_option( 'dahu_booking_event_title' ) ) {
-            update_option( 'dahu_booking_event_title', 'Présentation de votre projet' );
+            update_option( 'dahu_booking_event_title', 'Rendez-vous' );
         }
 
         // Affichage du titre/meta (durée, lieu) sur l'étape 1

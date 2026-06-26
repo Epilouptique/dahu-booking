@@ -19,7 +19,7 @@ wp_enqueue_script( 'dahu-booking-script' );
 
         <div class="dahu-manage-page__not-found">
             <h2>Réservation introuvable</h2>
-            <p>Ce lien n'est plus valide. Si vous pensez qu'il s'agit d'une erreur, contactez-nous directement à <a href="mailto:contact@dahu-concept.fr">contact@dahu-concept.fr</a>.</p>
+            <p>Ce lien n'est plus valide. Si vous pensez qu'il s'agit d'une erreur, contactez-nous directement à <a href="mailto:<?php echo esc_attr( get_option( 'dahu_booking_admin_email', get_option( 'admin_email' ) ) ); ?>"><?php echo esc_html( get_option( 'dahu_booking_admin_email', get_option( 'admin_email' ) ) ); ?></a>.</p>
         </div>
 
     <?php elseif ( 'cancelled' === $booking['status'] ) : ?>
@@ -30,18 +30,18 @@ wp_enqueue_script( 'dahu-booking-script' );
         </div>
 
     <?php else :
-        $date_obj = new DateTime( $booking['booking_date'] );
-        $jours = array( 'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi' );
-        $mois  = array( '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre' );
-        $date_fr = $jours[ (int) $date_obj->format( 'w' ) ] . ' ' . $date_obj->format( 'j' ) . ' ' . $mois[ (int) $date_obj->format( 'n' ) ] . ' ' . $date_obj->format( 'Y' );
-        $heure = substr( $booking['booking_time'], 0, 5 );
+        $dahu_date_obj = new DateTime( $booking['booking_date'] );
+        $dahu_jours = array( 'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi' );
+        $dahu_mois  = array( '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre' );
+        $dahu_date_fr = $dahu_jours[ (int) $dahu_date_obj->format( 'w' ) ] . ' ' . $dahu_date_obj->format( 'j' ) . ' ' . $dahu_mois[ (int) $dahu_date_obj->format( 'n' ) ] . ' ' . $dahu_date_obj->format( 'Y' );
+        $dahu_heure = substr( $booking['booking_time'], 0, 5 );
     ?>
 
         <div class="dahu-manage-page__content" id="dahu-manage-widget" data-token="<?php echo esc_attr( $token ); ?>">
 
             <div class="dahu-manage-page__current">
                 <span class="dahu-manage-page__label">Votre rendez-vous actuel</span>
-                <h2><?php echo esc_html( ucfirst( $date_fr ) ); ?> à <?php echo esc_html( $heure ); ?></h2>
+                <h2><?php echo esc_html( ucfirst( $dahu_date_fr ) ); ?> à <?php echo esc_html( $dahu_heure ); ?></h2>
                 <p><?php echo esc_html( $booking['client_name'] ); ?> · <?php echo esc_html( $booking['client_email'] ); ?></p>
             </div>
 

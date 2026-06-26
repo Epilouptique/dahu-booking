@@ -41,9 +41,10 @@ class Dahu_Booking_Public {
         global $post;
 
         $has_shortcode = is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'dahu_booking' );
+        $has_block     = is_a( $post, 'WP_Post' ) && has_block( 'dahu-booking/widget', $post );
         $is_manage_page = isset( $_GET['dahu_booking_manage'] );
 
-        if ( ! $has_shortcode && ! $is_manage_page ) {
+        if ( ! $has_shortcode && ! $has_block && ! $is_manage_page ) {
             return;
         }
 
@@ -113,7 +114,7 @@ class Dahu_Booking_Public {
     public function ajax_get_available_times() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
 
-        $date = isset( $_POST['date'] ) ? sanitize_text_field( $_POST['date'] ) : '';
+        $date = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : '';
 
         if ( ! $this->is_valid_date( $date ) ) {
             wp_send_json_error( array( 'message' => 'Date invalide.' ) );
@@ -130,11 +131,26 @@ class Dahu_Booking_Public {
     public function ajax_create_booking() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
 
-        $date    = isset( $_POST['date'] ) ? sanitize_text_field( $_POST['date'] ) : '';
-        $time    = isset( $_POST['time'] ) ? sanitize_text_field( $_POST['time'] ) : '';
-        $name    = isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '';
-        $email   = isset( $_POST['email'] ) ? sanitize_email( $_POST['email'] ) : '';
-        $message = isset( $_POST['message'] ) ? sanitize_textarea_field( $_POST['message'] ) : '';
+        // Honeypot anti-spam : champ caché que seuls les bots remplissent
+        if ( ! empty( $_POST['dahu_hp'] ) ) {
+            wp_send_json_error( array( 'message' => 'Requête invalide.' ) );
+        }
+
+        // Limite de fréquence simple par IP (1 réservation toutes les 20 secondes max)
+        $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+        if ( $ip ) {
+            $rate_key = 'dahu_booking_rate_' . md5( $ip );
+            if ( get_transient( $rate_key ) ) {
+                wp_send_json_error( array( 'message' => 'Merci de patienter quelques secondes avant de réessayer.' ) );
+            }
+            set_transient( $rate_key, 1, 20 );
+        }
+
+        $date    = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : '';
+        $time    = isset( $_POST['time'] ) ? sanitize_text_field( wp_unslash( $_POST['time'] ) ) : '';
+        $name    = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+        $email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+        $message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
 
         // Validation serveur (ne jamais faire confiance au front uniquement)
         if ( ! $this->is_valid_date( $date ) || ! preg_match( '/^\d{2}:\d{2}$/', $time ) ) {
@@ -163,9 +179,9 @@ class Dahu_Booking_Public {
     public function ajax_reschedule_booking() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
 
-        $token    = isset( $_POST['token'] ) ? sanitize_text_field( $_POST['token'] ) : '';
-        $new_date = isset( $_POST['date'] ) ? sanitize_text_field( $_POST['date'] ) : '';
-        $new_time = isset( $_POST['time'] ) ? sanitize_text_field( $_POST['time'] ) : '';
+        $token    = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
+        $new_date = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : '';
+        $new_time = isset( $_POST['time'] ) ? sanitize_text_field( wp_unslash( $_POST['time'] ) ) : '';
 
         $booking = Dahu_Booking_DB::get_booking_by_token( $token );
         if ( ! $booking ) {
@@ -194,14 +210,7 @@ class Dahu_Booking_Public {
     public function ajax_cancel_booking() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
 
-        $token = isset( $_POST['token'] ) ? sanitize_text_field( $_POST['token'] ) : '';
-
-        $booking = Dahu_Booking_DB::get_booking_by_token( $token );
-        if ( ! $booking ) {
-            wp_send_json_error( array( 'message' => 'Réservation introuvable.' ) );
-        }
-
-        Dahu_Booking_DB::cancel_booking( $token );
+        $token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
         Dahu_Booking_Mailer::send_cancellation_confirmation( $booking );
 
         wp_send_json_success( array( 'message' => 'Rendez-vous annulé.' ) );
@@ -215,7 +224,7 @@ class Dahu_Booking_Public {
             return;
         }
 
-        $token   = sanitize_text_field( $_GET['token'] );
+        $token   = sanitize_text_field( wp_unslash( $_GET['token'] ) );
         $booking = Dahu_Booking_DB::get_booking_by_token( $token );
 
         get_header();

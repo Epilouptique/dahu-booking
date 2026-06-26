@@ -5,7 +5,7 @@ Plugin WordPress sur mesure de réservation de créneaux pour [Dahu-Concept](htt
 ## Fonctionnalités
 
 - Widget de réservation en 2 étapes (calendrier + créneaux horaires, puis formulaire de coordonnées), avec transitions animées façon Calendly
-- Shortcode `[dahu_booking]` à insérer sur n'importe quelle page
+- Shortcode `[dahu_booking]` **ou bloc Gutenberg natif** ("Dahu Booking" dans l'éditeur de blocs) à insérer sur n'importe quelle page
 - Gestion des disponibilités depuis l'admin WordPress (jours/heures ouverts, blocage de créneaux ponctuels)
 - Emails automatiques (confirmation client + notification admin) via `wp_mail()`, compatibles avec tout SMTP configuré (FluentSMTP, WP Mail SMTP...)
 - Modification et annulation de rendez-vous par le client via un lien sécurisé (token unique), sans compte requis
@@ -44,3 +44,7 @@ dahu-booking/
 - PHP / WordPress (tables SQL dédiées via `dbDelta`)
 - JavaScript vanilla (pas de dépendance front-end)
 - CSS personnalisé, variables CSS pour la charte graphique
+
+## Licence
+
+GPLv2 (or later) — voir le fichier [LICENSE](LICENSE). Libre, gratuit, open source.

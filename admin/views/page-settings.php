@@ -1,13 +1,23 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-$jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 5 => 'Vendredi', 6 => 'Samedi', 0 => 'Dimanche' );
+$dahu_jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 5 => 'Vendredi', 6 => 'Samedi', 0 => 'Dimanche' );
+$dahu_saved_notice = isset( $_GET['saved'] ) ? sanitize_text_field( wp_unslash( $_GET['saved'] ) ) : '';
 ?>
 <div class="wrap dahu-admin">
     <h1>Réglages — Dahu Booking</h1>
 
-    <?php if ( isset( $_GET['saved'] ) ) : ?>
+    <?php if ( $dahu_saved_notice ) : ?>
         <div class="notice notice-success is-dismissible"><p>Réglages enregistrés.</p></div>
     <?php endif; ?>
+
+    <div class="dahu-admin-card" style="margin-bottom:20px;">
+        <h2 style="margin-top:0;">Comment afficher le widget de réservation ?</h2>
+        <p>Deux façons équivalentes d'insérer le calendrier de réservation sur une page :</p>
+        <ul style="list-style:disc; margin-left:20px;">
+            <li><strong>Shortcode :</strong> colle <code>[dahu_booking]</code> dans n'importe quelle page ou widget texte.</li>
+            <li><strong>Bloc Gutenberg :</strong> dans l'éditeur de page, ajoute un bloc et recherche <strong>"Dahu Booking"</strong>.</li>
+        </ul>
+    </div>
 
     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
         <input type="hidden" name="action" value="dahu_save_settings">
@@ -18,11 +28,11 @@ $jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi',
             <tr>
                 <th scope="row">Jours ouverts</th>
                 <td>
-                    <?php foreach ( $jours_label as $value => $label ) : ?>
+                    <?php foreach ( $dahu_jours_label as $dahu_day_value => $dahu_day_label ) : ?>
                         <label style="margin-right:14px;">
-                            <input type="checkbox" name="open_days[]" value="<?php echo esc_attr( $value ); ?>"
-                                <?php checked( in_array( $value, $settings['open_days'], true ) ); ?>>
-                            <?php echo esc_html( $label ); ?>
+                            <input type="checkbox" name="open_days[]" value="<?php echo esc_attr( $dahu_day_value ); ?>"
+                                <?php checked( in_array( $dahu_day_value, $settings['open_days'], true ) ); ?>>
+                            <?php echo esc_html( $dahu_day_label ); ?>
                         </label>
                     <?php endforeach; ?>
                 </td>

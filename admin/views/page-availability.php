@@ -1,14 +1,16 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-$jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 5 => 'Vendredi', 6 => 'Samedi', 0 => 'Dimanche' );
+$dahu_jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 5 => 'Vendredi', 6 => 'Samedi', 0 => 'Dimanche' );
+$dahu_blocked_notice   = isset( $_GET['blocked'] ) ? sanitize_text_field( wp_unslash( $_GET['blocked'] ) ) : '';
+$dahu_unblocked_notice = isset( $_GET['unblocked'] ) ? sanitize_text_field( wp_unslash( $_GET['unblocked'] ) ) : '';
 ?>
 <div class="wrap dahu-admin">
     <h1>Disponibilités</h1>
 
-    <?php if ( isset( $_GET['blocked'] ) ) : ?>
+    <?php if ( $dahu_blocked_notice ) : ?>
         <div class="notice notice-success is-dismissible"><p>Créneau bloqué.</p></div>
     <?php endif; ?>
-    <?php if ( isset( $_GET['unblocked'] ) ) : ?>
+    <?php if ( $dahu_unblocked_notice ) : ?>
         <div class="notice notice-success is-dismissible"><p>Créneau débloqué, à nouveau disponible.</p></div>
     <?php endif; ?>
 
@@ -19,9 +21,9 @@ $jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi',
             <p>Vos jours et heures d'ouverture par défaut se règlent depuis <a href="<?php echo esc_url( admin_url( 'admin.php?page=dahu-booking-settings' ) ); ?>">la page Réglages</a>.</p>
             <p><strong>Jours ouverts actuellement :</strong>
                 <?php
-                $labels = array();
-                foreach ( $open_days as $d ) { $labels[] = $jours_label[ $d ]; }
-                echo esc_html( implode( ', ', $labels ) );
+                $dahu_day_labels = array();
+                foreach ( $open_days as $dahu_day ) { $dahu_day_labels[] = $dahu_jours_label[ $dahu_day ]; }
+                echo esc_html( implode( ', ', $dahu_day_labels ) );
                 ?>
             </p>
             <p><strong>Créneaux proposés :</strong> <?php echo esc_html( implode( ', ', $time_slots ) ); ?></p>
@@ -42,8 +44,8 @@ $jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi',
                         <th><label for="slot_time">Heure</label></th>
                         <td>
                             <select id="slot_time" name="slot_time" required>
-                                <?php foreach ( $time_slots as $slot ) : ?>
-                                    <option value="<?php echo esc_attr( $slot ); ?>"><?php echo esc_html( $slot ); ?></option>
+                                <?php foreach ( $time_slots as $dahu_slot_option ) : ?>
+                                    <option value="<?php echo esc_attr( $dahu_slot_option ); ?>"><?php echo esc_html( $dahu_slot_option ); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
@@ -67,18 +69,18 @@ $jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi',
                         <tr><th>Date</th><th>Heure</th><th>Raison</th><th>Action</th></tr>
                     </thead>
                     <tbody>
-                        <?php foreach ( $blocked as $slot ) :
-                            $d = new DateTime( $slot['slot_date'] );
+                        <?php foreach ( $blocked as $dahu_blocked_slot ) :
+                            $dahu_slot_date_obj = new DateTime( $dahu_blocked_slot['slot_date'] );
                         ?>
                         <tr>
-                            <td><?php echo esc_html( $d->format( 'd/m/Y' ) ); ?></td>
-                            <td><?php echo esc_html( substr( $slot['slot_time'], 0, 5 ) ); ?></td>
-                            <td><?php echo esc_html( $slot['reason'] ?: '—' ); ?></td>
+                            <td><?php echo esc_html( $dahu_slot_date_obj->format( 'd/m/Y' ) ); ?></td>
+                            <td><?php echo esc_html( substr( $dahu_blocked_slot['slot_time'], 0, 5 ) ); ?></td>
+                            <td><?php echo esc_html( $dahu_blocked_slot['reason'] ?: '—' ); ?></td>
                             <td>
                                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                                     <input type="hidden" name="action" value="dahu_unblock_slot">
-                                    <input type="hidden" name="slot_date" value="<?php echo esc_attr( $slot['slot_date'] ); ?>">
-                                    <input type="hidden" name="slot_time" value="<?php echo esc_attr( substr( $slot['slot_time'], 0, 5 ) ); ?>">
+                                    <input type="hidden" name="slot_date" value="<?php echo esc_attr( $dahu_blocked_slot['slot_date'] ); ?>">
+                                    <input type="hidden" name="slot_time" value="<?php echo esc_attr( substr( $dahu_blocked_slot['slot_time'], 0, 5 ) ); ?>">
                                     <?php wp_nonce_field( 'dahu_unblock_slot_action' ); ?>
                                     <button type="submit" class="button button-small">Débloquer</button>
                                 </form>

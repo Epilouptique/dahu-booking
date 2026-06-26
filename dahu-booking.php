@@ -1,11 +1,16 @@
 <?php
 /**
  * Plugin Name: Dahu Booking
- * Plugin URI: https://dahu-concept.fr
- * Description: Système de réservation de créneaux sur mesure pour Dahu-Concept. Calendrier interactif, gestion des disponibilités, emails automatiques, et modification/annulation par lien sécurisé.
+ * Plugin URI: https://github.com/Epilouptique/dahu-booking
+ * Description: Système de réservation de créneaux léger et autonome : calendrier interactif en deux étapes, gestion des disponibilités, emails automatiques, et modification/annulation par lien sécurisé — sans dépendance à un service tiers.
  * Version: 1.0.0
+ * Requires at least: 6.2
+ * Requires PHP: 7.4
  * Author: Dahu-Concept
+ * Author URI: https://dahu-concept.fr
  * Text Domain: dahu-booking
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 // Sécurité : empêche l'accès direct au fichier
@@ -51,3 +56,15 @@ function dahu_booking_init() {
     $public->init();
 }
 add_action( 'plugins_loaded', 'dahu_booking_init' );
+
+// ============================================
+// BLOC GUTENBERG
+// ============================================
+function dahu_booking_register_block() {
+    require_once DAHU_BOOKING_PATH . 'blocks/booking/render.php';
+
+    register_block_type( DAHU_BOOKING_PATH . 'blocks/booking', array(
+        'render_callback' => 'dahu_booking_render_block',
+    ) );
+}
+add_action( 'init', 'dahu_booking_register_block' );

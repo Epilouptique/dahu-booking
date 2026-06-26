@@ -7,10 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$event_title     = get_option( 'dahu_booking_event_title', 'Rendez-vous' );
-$duration        = get_option( 'dahu_booking_duration', 60 );
-$location        = get_option( 'dahu_booking_location', '' );
-$show_meta_step1 = get_option( 'dahu_booking_show_meta_step1', '0' ) === '1';
+$dahu_event_title     = get_option( 'dahu_booking_event_title', 'Rendez-vous' );
+$dahu_duration        = get_option( 'dahu_booking_duration', 60 );
+$dahu_location        = get_option( 'dahu_booking_location', '' );
+$dahu_show_meta_step1 = get_option( 'dahu_booking_show_meta_step1', '0' ) === '1';
 ?>
 <div class="dahu-booking" id="dahu-booking-widget">
 
@@ -35,18 +35,18 @@ $show_meta_step1 = get_option( 'dahu_booking_show_meta_step1', '0' ) === '1';
     <!-- Récap événement (titre, durée, lieu avec icônes) -->
     <!-- Affiché uniquement à l'étape 2, si activé en réglages -->
     <!-- ============================================ -->
-    <?php if ( $show_meta_step1 ) : ?>
+    <?php if ( $dahu_show_meta_step1 ) : ?>
     <div class="dahu-booking__selection-recap dahu-booking__step2-only" style="display:none;">
-        <span class="dahu-booking__recap-title"><?php echo esc_html( $event_title ); ?></span>
+        <span class="dahu-booking__recap-title"><?php echo esc_html( $dahu_event_title ); ?></span>
         <div class="dahu-booking__recap-meta">
             <span class="dahu-booking__recap-meta-item">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>
-                <?php echo esc_html( $duration ); ?> min
+                <?php echo esc_html( $dahu_duration ); ?> min
             </span>
-            <?php if ( $location ) : ?>
+            <?php if ( $dahu_location ) : ?>
             <span class="dahu-booking__recap-meta-item">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                <?php echo esc_html( $location ); ?>
+                <?php echo esc_html( $dahu_location ); ?>
             </span>
             <?php endif; ?>
         </div>
@@ -103,6 +103,11 @@ $show_meta_step1 = get_option( 'dahu_booking_show_meta_step1', '0' ) === '1';
             <h3 class="dahu-booking__step-title">Indiquez vos informations</h3>
 
             <form class="dahu-booking__form" autocomplete="on">
+
+                <div class="dahu-booking__field" style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+                    <label for="dahu-hp">Ne pas remplir ce champ</label>
+                    <input type="text" id="dahu-hp" name="dahu_hp" tabindex="-1" autocomplete="off">
+                </div>
 
                 <div class="dahu-booking__field">
                     <input type="text" id="dahu-name" name="name" placeholder="Votre nom*" required autocomplete="name">

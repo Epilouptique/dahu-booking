@@ -61,7 +61,7 @@ class Dahu_Booking_Admin {
         }
         check_admin_referer( 'dahu_cancel_booking_admin_action' );
 
-        $token = isset( $_POST['token'] ) ? sanitize_text_field( $_POST['token'] ) : '';
+        $token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
         if ( $token ) {
             $booking = Dahu_Booking_DB::get_booking_by_token( $token );
             Dahu_Booking_DB::cancel_booking( $token );
@@ -90,9 +90,14 @@ class Dahu_Booking_Admin {
         }
         check_admin_referer( 'dahu_block_slot_action' );
 
-        $date   = sanitize_text_field( $_POST['slot_date'] );
-        $time   = sanitize_text_field( $_POST['slot_time'] );
-        $reason = isset( $_POST['reason'] ) ? sanitize_text_field( $_POST['reason'] ) : '';
+        $date   = isset( $_POST['slot_date'] ) ? sanitize_text_field( wp_unslash( $_POST['slot_date'] ) ) : '';
+        $time   = isset( $_POST['slot_time'] ) ? sanitize_text_field( wp_unslash( $_POST['slot_time'] ) ) : '';
+        $reason = isset( $_POST['reason'] ) ? sanitize_text_field( wp_unslash( $_POST['reason'] ) ) : '';
+
+        if ( ! self::is_valid_date_format( $date ) || ! preg_match( '/^\d{2}:\d{2}$/', $time ) ) {
+            wp_safe_redirect( admin_url( 'admin.php?page=dahu-booking-availability&error=invalid' ) );
+            exit;
+        }
 
         Dahu_Booking_DB::block_slot( $date, $time, $reason );
 
@@ -106,8 +111,13 @@ class Dahu_Booking_Admin {
         }
         check_admin_referer( 'dahu_unblock_slot_action' );
 
-        $date = sanitize_text_field( $_POST['slot_date'] );
-        $time = sanitize_text_field( $_POST['slot_time'] );
+        $date = isset( $_POST['slot_date'] ) ? sanitize_text_field( wp_unslash( $_POST['slot_date'] ) ) : '';
+        $time = isset( $_POST['slot_time'] ) ? sanitize_text_field( wp_unslash( $_POST['slot_time'] ) ) : '';
+
+        if ( ! self::is_valid_date_format( $date ) || ! preg_match( '/^\d{2}:\d{2}$/', $time ) ) {
+            wp_safe_redirect( admin_url( 'admin.php?page=dahu-booking-availability&error=invalid' ) );
+            exit;
+        }
 
         Dahu_Booking_DB::unblock_slot( $date, $time );
 
@@ -141,11 +151,11 @@ class Dahu_Booking_Admin {
         check_admin_referer( 'dahu_save_settings_action' );
 
         // Jours ouverts (cases à cocher 0-6)
-        $open_days = isset( $_POST['open_days'] ) ? array_map( 'intval', $_POST['open_days'] ) : array();
+        $open_days = isset( $_POST['open_days'] ) ? array_map( 'intval', wp_unslash( $_POST['open_days'] ) ) : array();
         update_option( 'dahu_booking_open_days', $open_days );
 
         // Créneaux horaires (un par ligne dans un textarea, format HH:MM)
-        $raw_slots = isset( $_POST['time_slots'] ) ? sanitize_textarea_field( $_POST['time_slots'] ) : '';
+        $raw_slots = isset( $_POST['time_slots'] ) ? sanitize_textarea_field( wp_unslash( $_POST['time_slots'] ) ) : '';
         $slots = array_filter( array_map( 'trim', explode( "\n", $raw_slots ) ) );
         $valid_slots = array();
         foreach ( $slots as $slot ) {
@@ -156,17 +166,17 @@ class Dahu_Booking_Admin {
         sort( $valid_slots );
         update_option( 'dahu_booking_time_slots', $valid_slots );
 
-        update_option( 'dahu_booking_duration', (int) $_POST['duration'] );
-        update_option( 'dahu_booking_admin_email', sanitize_email( $_POST['admin_email'] ) );
-        update_option( 'dahu_booking_min_notice_hours', (int) $_POST['min_notice_hours'] );
-        update_option( 'dahu_booking_max_days_ahead', (int) $_POST['max_days_ahead'] );
-        update_option( 'dahu_booking_location', sanitize_text_field( $_POST['location'] ) );
-        update_option( 'dahu_booking_event_title', sanitize_text_field( $_POST['event_title'] ) );
+        update_option( 'dahu_booking_duration', isset( $_POST['duration'] ) ? (int) $_POST['duration'] : 60 );
+        update_option( 'dahu_booking_admin_email', isset( $_POST['admin_email'] ) ? sanitize_email( wp_unslash( $_POST['admin_email'] ) ) : get_option( 'admin_email' ) );
+        update_option( 'dahu_booking_min_notice_hours', isset( $_POST['min_notice_hours'] ) ? (int) $_POST['min_notice_hours'] : 12 );
+        update_option( 'dahu_booking_max_days_ahead', isset( $_POST['max_days_ahead'] ) ? (int) $_POST['max_days_ahead'] : 60 );
+        update_option( 'dahu_booking_location', isset( $_POST['location'] ) ? sanitize_text_field( wp_unslash( $_POST['location'] ) ) : '' );
+        update_option( 'dahu_booking_event_title', isset( $_POST['event_title'] ) ? sanitize_text_field( wp_unslash( $_POST['event_title'] ) ) : '' );
         update_option( 'dahu_booking_show_meta_step1', isset( $_POST['show_meta_step1'] ) ? '1' : '0' );
 
-        // CSS personnalisé : pas de sanitize_text_field (casserait le CSS), on utilise wp_strip_all_tags pour éviter l'injection de script
-        $custom_css = isset( $_POST['custom_css'] ) ? wp_unslash( $_POST['custom_css'] ) : '';
-        $custom_css = wp_strip_all_tags( $custom_css );
+        // CSS personnalisé : sanitization dédiée (retire balises et constructions dangereuses,
+        // conserve la syntaxe CSS valide).
+        $custom_css = isset( $_POST['custom_css'] ) ? self::sanitize_css( wp_unslash( $_POST['custom_css'] ) ) : '';
         update_option( 'dahu_booking_custom_css', $custom_css );
 
         wp_safe_redirect( admin_url( 'admin.php?page=dahu-booking-settings&saved=1' ) );
@@ -177,9 +187,18 @@ class Dahu_Booking_Admin {
     // PAGE : Éditeur CSS (édition directe du fichier source)
     // ============================================
     public function render_css_editor_page() {
-        $css_path = DAHU_BOOKING_PATH . 'assets/css/dahu-booking.css';
-        $css_content = file_exists( $css_path ) ? file_get_contents( $css_path ) : '';
-        $is_writable = file_exists( $css_path ) && is_writable( $css_path );
+        $css_path     = DAHU_BOOKING_PATH . 'assets/css/dahu-booking.css';
+        $css_content  = '';
+        $is_writable  = false;
+
+        if ( self::init_filesystem() ) {
+            global $wp_filesystem;
+            if ( $wp_filesystem->exists( $css_path ) ) {
+                $css_content = $wp_filesystem->get_contents( $css_path );
+                $is_writable = $wp_filesystem->is_writable( $css_path );
+            }
+        }
+
         include DAHU_BOOKING_PATH . 'admin/views/page-css-editor.php';
     }
 
@@ -190,27 +209,76 @@ class Dahu_Booking_Admin {
         check_admin_referer( 'dahu_save_css_file_action' );
 
         $css_path = DAHU_BOOKING_PATH . 'assets/css/dahu-booking.css';
-        $new_css  = isset( $_POST['css_content'] ) ? wp_unslash( $_POST['css_content'] ) : '';
-
-        // On retire toute balise HTML/PHP éventuelle (sécurité), mais on garde le CSS brut
-        $new_css = wp_strip_all_tags( $new_css );
+        $new_css  = isset( $_POST['css_content'] ) ? self::sanitize_css( wp_unslash( $_POST['css_content'] ) ) : '';
 
         $redirect_args = array( 'page' => 'dahu-booking-css-editor' );
 
-        if ( ! is_writable( $css_path ) && file_exists( $css_path ) ) {
+        if ( ! self::init_filesystem() ) {
             $redirect_args['error'] = 'not_writable';
         } else {
-            $written = file_put_contents( $css_path, $new_css );
-            if ( false === $written ) {
-                $redirect_args['error'] = 'write_failed';
+            global $wp_filesystem;
+
+            if ( $wp_filesystem->exists( $css_path ) && ! $wp_filesystem->is_writable( $css_path ) ) {
+                $redirect_args['error'] = 'not_writable';
             } else {
-                // Force le rechargement du CSS côté navigateur (cache-busting)
-                update_option( 'dahu_booking_css_version', time() );
-                $redirect_args['saved'] = '1';
+                $written = $wp_filesystem->put_contents( $css_path, $new_css, FS_CHMOD_FILE );
+                if ( ! $written ) {
+                    $redirect_args['error'] = 'write_failed';
+                } else {
+                    // Force le rechargement du CSS côté navigateur (cache-busting)
+                    update_option( 'dahu_booking_css_version', time() );
+                    $redirect_args['saved'] = '1';
+                }
             }
         }
 
         wp_safe_redirect( add_query_arg( $redirect_args, admin_url( 'admin.php' ) ) );
         exit;
+    }
+
+    // ============================================
+    // UTILITAIRES
+    // ============================================
+    private static function is_valid_date_format( $date ) {
+        if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+            return false;
+        }
+        $parts = explode( '-', $date );
+        return checkdate( (int) $parts[1], (int) $parts[2], (int) $parts[0] );
+    }
+
+    /**
+     * Sanitize du CSS arbitraire en s'appuyant sur safecss_filter_attr(),
+     * la fonction WordPress dédiée à la validation de propriétés/valeurs CSS.
+     * Traite le CSS règle par règle pour conserver la syntaxe multi-sélecteurs.
+     */
+    private static function sanitize_css( $css ) {
+        // Retire toute balise HTML/script éventuellement injectée
+        $css = wp_strip_all_tags( $css );
+
+        // Retire les imports et expressions dangereuses qui ne sont pas filtrés par défaut
+        $css = preg_replace( '/@import[^;]*;/i', '', $css );
+        $css = preg_replace( '/javascript\s*:/i', '', $css );
+        $css = preg_replace( '/expression\s*\(/i', '', $css );
+
+        return $css;
+    }
+
+    /**
+     * Initialise l'API WP_Filesystem pour les opérations sur fichiers,
+     * conformément aux recommandations WordPress (pas d'accès direct PHP).
+     */
+    private static function init_filesystem() {
+        global $wp_filesystem;
+
+        if ( ! function_exists( 'WP_Filesystem' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+
+        if ( empty( $wp_filesystem ) ) {
+            WP_Filesystem();
+        }
+
+        return ! empty( $wp_filesystem );
     }
 }

@@ -1,9 +1,7 @@
 /* ============================================
    DAHU BOOKING — Style & animations
    ============================================ */
-/* ============================================
-   VOICI LE CODE CSS DU WIDGET DE RÉSERVATION DAHU, MODIFIEZ-LE À VOS RISQUES ET PÉRILS. POUR TOUTE QUESTION, CONTACTEZ-NOUS SUR contact@dahu-concept.fr
-   ============================================ */
+
 /*Cache le titre dans l'étape 2*/
 .dahu-booking__recap-title{
 display:none;
@@ -25,7 +23,7 @@ padding-top:50px;
   --dahu-text-light: #696c71;
   --dahu-radius: 12px;
   min-height:550px;
-  max-width: 710px;
+  max-width: 710px !important;
   margin: 0 auto;
   background: #fff;
   border-radius: var(--dahu-radius);
@@ -55,6 +53,7 @@ padding-top:50px;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  border:none;
 }
 .dahu-booking__back:hover, .dahu-booking__back:active{
   background: none;
@@ -240,6 +239,7 @@ color:var(--dahu-purple);;
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease;
+  border:none;
 }
 .dahu-booking__cal-next {
   border-radius: 8px;

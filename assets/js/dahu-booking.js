@@ -375,6 +375,8 @@
       formData.append('name', name);
       formData.append('email', email);
       formData.append('message', message);
+      const hpField = form.querySelector('#dahu-hp');
+      formData.append('dahu_hp', hpField ? hpField.value : '');
 
       fetch(dahuBookingData.ajaxUrl, { method: 'POST', body: formData })
         .then(res => res.json())

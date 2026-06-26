@@ -4,19 +4,24 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <div class="wrap dahu-admin">
     <h1>Éditeur CSS — Dahu Booking</h1>
 
-    <?php if ( isset( $_GET['saved'] ) ) : ?>
+    <?php
+    $dahu_saved = isset( $_GET['saved'] ) ? sanitize_text_field( wp_unslash( $_GET['saved'] ) ) : '';
+    $dahu_error = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : '';
+    ?>
+
+    <?php if ( $dahu_saved ) : ?>
         <div class="notice notice-success is-dismissible"><p>Fichier CSS enregistré et appliqué immédiatement sur le site.</p></div>
     <?php endif; ?>
 
-    <?php if ( isset( $_GET['error'] ) && 'not_writable' === $_GET['error'] ) : ?>
+    <?php if ( 'not_writable' === $dahu_error ) : ?>
         <div class="notice notice-error"><p><strong>Le fichier n'est pas modifiable.</strong> Les permissions d'écriture sur le serveur empêchent la sauvegarde directe. Utilise le champ "CSS personnalisé" dans Réglages, ou modifie le fichier par FTP : <code>wp-content/plugins/dahu-booking/assets/css/dahu-booking.css</code></p></div>
     <?php endif; ?>
 
-    <?php if ( isset( $_GET['error'] ) && 'write_failed' === $_GET['error'] ) : ?>
+    <?php if ( 'write_failed' === $dahu_error ) : ?>
         <div class="notice notice-error"><p>L'enregistrement a échoué. Réessaie, ou modifie le fichier par FTP si le problème persiste.</p></div>
     <?php endif; ?>
 
-    <?php if ( ! $is_writable && file_exists( $css_path ) ) : ?>
+    <?php if ( ! $is_writable && '' !== $css_content ) : ?>
         <div class="notice notice-warning"><p>⚠️ Ce fichier semble non modifiable directement depuis cette page (permissions serveur). Tu peux quand même copier/coller le contenu ci-dessous pour le modifier en local puis le renvoyer par FTP.</p></div>
     <?php endif; ?>
 
