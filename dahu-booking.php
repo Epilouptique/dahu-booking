@@ -7,7 +7,7 @@
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Author: Hugo Vial-Jaime
- * Author URI: https://dahu-concept.fr
+ * Author URI: mailto:contact@dahu-concept.fr
  * Text Domain: dahu-booking
  * Domain Path: /languages
  * License: GPL-2.0-or-later
@@ -57,6 +57,32 @@ function dahu_booking_init() {
     $public->init();
 }
 add_action( 'plugins_loaded', 'dahu_booking_init' );
+
+// ============================================
+// PAGE EXTENSIONS — ACTION LINKS ET LIGNE MÉTA
+// ============================================
+
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ),
+    function( $links ) {
+        $settings = '<a href="' . admin_url( 'admin.php?page=dahu-booking-settings' ) . '">'
+            . __( 'Réglages' ) . '</a>';
+        array_unshift( $links, $settings );
+        return $links;
+    }
+);
+
+add_filter( 'plugin_row_meta', function( $links, $file ) {
+    if ( plugin_basename( __FILE__ ) === $file ) {
+        $header = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+        $links  = array(
+            /* translators: %s: plugin version number */
+            sprintf( __( 'Version %s' ), $header['Version'] ),
+            '<a href="https://dahu-concept.fr" target="_blank">Par Hugo Vial-Jaime — Dahu-Concept</a>',
+            '<a href="https://dahu-concept.fr" target="_blank">' . __( "Aller sur le site de l'extension" ) . '</a>',
+        );
+    }
+    return $links;
+}, 10, 2 );
 
 // ============================================
 // BLOC GUTENBERG
