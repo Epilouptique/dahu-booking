@@ -48,13 +48,11 @@ class Dahu_Booking_Public {
             return;
         }
 
-        $css_version = get_option( 'dahu_booking_css_version', DAHU_BOOKING_VERSION );
-
         wp_enqueue_style(
             'dahu-booking-style',
             DAHU_BOOKING_URL . 'assets/css/dahu-booking.css',
             array(),
-            $css_version
+            DAHU_BOOKING_VERSION
         );
 
         wp_enqueue_script(
@@ -65,36 +63,69 @@ class Dahu_Booking_Public {
             true
         );
 
-        $custom_css = get_option( 'dahu_booking_custom_css', '' );
-        if ( ! empty( $custom_css ) ) {
-            wp_add_inline_style( 'dahu-booking-style', $custom_css );
-        }
-
         wp_localize_script( 'dahu-booking-script', 'dahuBookingData', array(
-            'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-            'nonce'      => wp_create_nonce( 'dahu_booking_nonce' ),
-            'eventTitle' => get_option( 'dahu_booking_event_title', 'Rendez-vous' ),
-            'duration'   => get_option( 'dahu_booking_duration', 60 ),
-            'location'   => get_option( 'dahu_booking_location', '' ),
+            'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+            'nonce'         => wp_create_nonce( 'dahu_booking_nonce' ),
+            'eventTitle'    => get_option( 'dahu_booking_event_title', __( 'Appointment', 'dahu-booking' ) ),
+            'duration'      => get_option( 'dahu_booking_duration', 60 ),
+            'location'      => get_option( 'dahu_booking_location', '' ),
             'showMetaStep1' => get_option( 'dahu_booking_show_meta_step1', '0' ) === '1',
-            'maxDaysAhead' => (int) get_option( 'dahu_booking_max_days_ahead', 60 ),
-            'openDays'   => get_option( 'dahu_booking_open_days', array( 1, 2, 3, 4, 5, 6 ) ),
-            'i18n'       => array(
-                'selectDateTime' => 'Sélectionnez la date et l\'heure',
-                'yourInfo'       => 'Indiquez vos informations',
-                'name'           => 'Nom',
-                'email'          => 'E-mail',
-                'message'        => 'Veuillez partager tout ce qui pourra être utile à la préparation de notre réunion.',
-                'confirm'        => 'Confirmer le rendez-vous',
-                'next'           => 'Suivant',
-                'back'           => 'Retour',
-                'noSlots'        => 'Aucun créneau disponible ce jour-là.',
-                'pickDate'       => 'Choisissez une date dans le calendrier.',
-                'loading'        => 'Chargement...',
-                'sending'        => 'Envoi en cours...',
-                'success'        => 'Votre rendez-vous est confirmé ! Un email de confirmation vous a été envoyé.',
-                'error'          => 'Une erreur est survenue. Merci de réessayer.',
-                'slotTaken'      => 'Ce créneau vient d\'être réservé par quelqu\'un d\'autre. Merci d\'en choisir un autre.',
+            'maxDaysAhead'  => (int) get_option( 'dahu_booking_max_days_ahead', 60 ),
+            'openDays'      => get_option( 'dahu_booking_open_days', array( 1, 2, 3, 4, 5, 6 ) ),
+            'i18n'          => array(
+                'selectDateTime' => __( 'Select a date and time', 'dahu-booking' ),
+                'yourInfo'       => __( 'Your details', 'dahu-booking' ),
+                'name'           => __( 'Name', 'dahu-booking' ),
+                'email'          => __( 'Email', 'dahu-booking' ),
+                'message'        => __( 'Please share anything that will help prepare for our meeting.', 'dahu-booking' ),
+                'confirm'        => __( 'Confirm appointment', 'dahu-booking' ),
+                'next'           => __( 'Next', 'dahu-booking' ),
+                'back'           => __( 'Back', 'dahu-booking' ),
+                'noSlots'        => __( 'No available slots on this day.', 'dahu-booking' ),
+                'pickDate'       => __( 'Please choose a date from the calendar.', 'dahu-booking' ),
+                'loading'        => __( 'Loading…', 'dahu-booking' ),
+                'sending'        => __( 'Sending…', 'dahu-booking' ),
+                'success'        => __( 'Your appointment is confirmed! A confirmation email has been sent to you.', 'dahu-booking' ),
+                'error'          => __( 'An error occurred. Please try again.', 'dahu-booking' ),
+                'slotTaken'         => __( 'This slot was just booked by someone else. Please choose another one.', 'dahu-booking' ),
+                'cancelSuccess'     => __( 'Your appointment has been cancelled. A confirmation email will be sent to you.', 'dahu-booking' ),
+                'rescheduleSuccess' => __( 'Your appointment has been rescheduled. A confirmation email will be sent to you.', 'dahu-booking' ),
+                'confirmReschedule' => __( 'Confirm new time slot', 'dahu-booking' ),
+                /* Weekday abbreviations for the calendar header (Mon–Sun, starting Monday) */
+                'weekdays'       => array(
+                    __( 'Mon', 'dahu-booking' ),
+                    __( 'Tue', 'dahu-booking' ),
+                    __( 'Wed', 'dahu-booking' ),
+                    __( 'Thu', 'dahu-booking' ),
+                    __( 'Fri', 'dahu-booking' ),
+                    __( 'Sat', 'dahu-booking' ),
+                    __( 'Sun', 'dahu-booking' ),
+                ),
+                /* Full month names for the calendar label (January–December) */
+                'months'         => array(
+                    __( 'January', 'dahu-booking' ),
+                    __( 'February', 'dahu-booking' ),
+                    __( 'March', 'dahu-booking' ),
+                    __( 'April', 'dahu-booking' ),
+                    __( 'May', 'dahu-booking' ),
+                    __( 'June', 'dahu-booking' ),
+                    __( 'July', 'dahu-booking' ),
+                    __( 'August', 'dahu-booking' ),
+                    __( 'September', 'dahu-booking' ),
+                    __( 'October', 'dahu-booking' ),
+                    __( 'November', 'dahu-booking' ),
+                    __( 'December', 'dahu-booking' ),
+                ),
+                /* Full day names (Sunday–Saturday, JS getDay() order) for the date label */
+                'days'           => array(
+                    __( 'Sunday', 'dahu-booking' ),
+                    __( 'Monday', 'dahu-booking' ),
+                    __( 'Tuesday', 'dahu-booking' ),
+                    __( 'Wednesday', 'dahu-booking' ),
+                    __( 'Thursday', 'dahu-booking' ),
+                    __( 'Friday', 'dahu-booking' ),
+                    __( 'Saturday', 'dahu-booking' ),
+                ),
             ),
         ) );
     }
@@ -117,7 +148,7 @@ class Dahu_Booking_Public {
         $date = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : '';
 
         if ( ! $this->is_valid_date( $date ) ) {
-            wp_send_json_error( array( 'message' => 'Date invalide.' ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid date.', 'dahu-booking' ) ) );
         }
 
         $available = Dahu_Booking_DB::get_available_times_for_date( $date );
@@ -126,22 +157,22 @@ class Dahu_Booking_Public {
     }
 
     // ============================================
-    // AJAX : Créer une nouvelle réservation
+    // AJAX: Create a new booking
     // ============================================
     public function ajax_create_booking() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
 
-        // Honeypot anti-spam : champ caché que seuls les bots remplissent
+        // Honeypot anti-spam: hidden field filled only by bots.
         if ( ! empty( $_POST['dahu_hp'] ) ) {
-            wp_send_json_error( array( 'message' => 'Requête invalide.' ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid request.', 'dahu-booking' ) ) );
         }
 
-        // Limite de fréquence simple par IP (1 réservation toutes les 20 secondes max)
+        // Simple rate limit by IP (max 1 booking every 20 seconds).
         $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
         if ( $ip ) {
             $rate_key = 'dahu_booking_rate_' . md5( $ip );
             if ( get_transient( $rate_key ) ) {
-                wp_send_json_error( array( 'message' => 'Merci de patienter quelques secondes avant de réessayer.' ) );
+                wp_send_json_error( array( 'message' => __( 'Please wait a few seconds before trying again.', 'dahu-booking' ) ) );
             }
             set_transient( $rate_key, 1, 20 );
         }
@@ -152,13 +183,13 @@ class Dahu_Booking_Public {
         $email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
         $message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
 
-        // Validation serveur (ne jamais faire confiance au front uniquement)
+        // Server-side validation (never trust the front-end alone).
         if ( ! $this->is_valid_date( $date ) || ! preg_match( '/^\d{2}:\d{2}$/', $time ) ) {
-            wp_send_json_error( array( 'message' => 'Créneau invalide.' ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid time slot.', 'dahu-booking' ) ) );
         }
 
         if ( empty( $name ) || empty( $email ) || ! is_email( $email ) ) {
-            wp_send_json_error( array( 'message' => 'Merci de renseigner un nom et un email valides.' ) );
+            wp_send_json_error( array( 'message' => __( 'Please provide a valid name and email address.', 'dahu-booking' ) ) );
         }
 
         $result = Dahu_Booking_DB::create_booking( $date, $time, $name, $email, $message );
@@ -170,11 +201,11 @@ class Dahu_Booking_Public {
         $booking = Dahu_Booking_DB::get_booking_by_id( $result['id'] );
         Dahu_Booking_Mailer::send_booking_emails( $booking );
 
-        wp_send_json_success( array( 'message' => 'Réservation confirmée.' ) );
+        wp_send_json_success( array( 'message' => __( 'Booking confirmed.', 'dahu-booking' ) ) );
     }
 
     // ============================================
-    // AJAX : Déplacer une réservation existante (depuis la page de gestion)
+    // AJAX: Reschedule an existing booking (from the management page)
     // ============================================
     public function ajax_reschedule_booking() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
@@ -185,11 +216,11 @@ class Dahu_Booking_Public {
 
         $booking = Dahu_Booking_DB::get_booking_by_token( $token );
         if ( ! $booking ) {
-            wp_send_json_error( array( 'message' => 'Réservation introuvable.' ) );
+            wp_send_json_error( array( 'message' => __( 'Booking not found.', 'dahu-booking' ) ) );
         }
 
         if ( ! $this->is_valid_date( $new_date ) || ! preg_match( '/^\d{2}:\d{2}$/', $new_time ) ) {
-            wp_send_json_error( array( 'message' => 'Créneau invalide.' ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid time slot.', 'dahu-booking' ) ) );
         }
 
         $success = Dahu_Booking_DB::reschedule_booking( $token, $new_date, $new_time );
@@ -201,19 +232,31 @@ class Dahu_Booking_Public {
         $updated_booking = Dahu_Booking_DB::get_booking_by_token( $token );
         Dahu_Booking_Mailer::send_reschedule_confirmation( $updated_booking );
 
-        wp_send_json_success( array( 'message' => 'Rendez-vous déplacé.' ) );
+        wp_send_json_success( array( 'message' => __( 'Appointment rescheduled.', 'dahu-booking' ) ) );
     }
 
     // ============================================
-    // AJAX : Annuler une réservation (depuis la page de gestion)
+    // AJAX : Cancel a booking (from the management page)
     // ============================================
     public function ajax_cancel_booking() {
         check_ajax_referer( 'dahu_booking_nonce', 'nonce' );
 
-        $token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
+        $token   = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
+        $booking = Dahu_Booking_DB::get_booking_by_token( $token );
+
+        if ( ! $booking ) {
+            wp_send_json_error( array( 'message' => 'Booking not found.' ) );
+        }
+
+        $cancelled = Dahu_Booking_DB::cancel_booking( $token );
+
+        if ( ! $cancelled ) {
+            wp_send_json_error( array( 'message' => 'Could not cancel booking.' ) );
+        }
+
         Dahu_Booking_Mailer::send_cancellation_confirmation( $booking );
 
-        wp_send_json_success( array( 'message' => 'Rendez-vous annulé.' ) );
+        wp_send_json_success( array( 'message' => 'Booking cancelled.' ) );
     }
 
     // ============================================

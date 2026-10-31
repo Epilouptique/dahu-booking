@@ -1,14 +1,15 @@
 <?php
 /**
  * Plugin Name: Dahu Booking
- * Plugin URI: https://github.com/Epilouptique/dahu-booking
- * Description: Système de réservation de créneaux léger et autonome : calendrier interactif en deux étapes, gestion des disponibilités, emails automatiques, et modification/annulation par lien sécurisé — sans dépendance à un service tiers.
- * Version: 1.0.0
+ * Plugin URI: https://dahu-concept.fr
+ * Description: Lightweight self-hosted appointment booking plugin: two-step calendar widget, availability management, automatic confirmation emails, and secure reschedule/cancel links — no third-party service required.
+ * Version: 1.0.1
  * Requires at least: 6.2
  * Requires PHP: 7.4
- * Author: Dahu-Concept
+ * Author: Hugo Vial-Jaime
  * Author URI: https://dahu-concept.fr
  * Text Domain: dahu-booking
+ * Domain Path: /languages
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -21,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // ============================================
 // CONSTANTES DU PLUGIN
 // ============================================
-define( 'DAHU_BOOKING_VERSION', '1.0.0' );
+define( 'DAHU_BOOKING_VERSION', '1.0.1' );
 define( 'DAHU_BOOKING_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DAHU_BOOKING_URL', plugin_dir_url( __FILE__ ) );
 define( 'DAHU_BOOKING_TABLE_BOOKINGS', 'dahu_bookings' );

@@ -1,21 +1,35 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-$dahu_jours_label = array( 1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 5 => 'Vendredi', 6 => 'Samedi', 0 => 'Dimanche' );
+$dahu_jours_label = array(
+    1 => __( 'Monday', 'dahu-booking' ),
+    2 => __( 'Tuesday', 'dahu-booking' ),
+    3 => __( 'Wednesday', 'dahu-booking' ),
+    4 => __( 'Thursday', 'dahu-booking' ),
+    5 => __( 'Friday', 'dahu-booking' ),
+    6 => __( 'Saturday', 'dahu-booking' ),
+    0 => __( 'Sunday', 'dahu-booking' ),
+);
 $dahu_saved_notice = isset( $_GET['saved'] ) ? sanitize_text_field( wp_unslash( $_GET['saved'] ) ) : '';
 ?>
 <div class="wrap dahu-admin">
-    <h1>Réglages — Dahu Booking</h1>
+    <h1><?php esc_html_e( 'Settings — Dahu Booking', 'dahu-booking' ); ?></h1>
 
     <?php if ( $dahu_saved_notice ) : ?>
-        <div class="notice notice-success is-dismissible"><p>Réglages enregistrés.</p></div>
+        <div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'dahu-booking' ); ?></p></div>
     <?php endif; ?>
 
-    <div class="dahu-admin-card" style="margin-bottom:20px;">
-        <h2 style="margin-top:0;">Comment afficher le widget de réservation ?</h2>
-        <p>Deux façons équivalentes d'insérer le calendrier de réservation sur une page :</p>
-        <ul style="list-style:disc; margin-left:20px;">
-            <li><strong>Shortcode :</strong> colle <code>[dahu_booking]</code> dans n'importe quelle page ou widget texte.</li>
-            <li><strong>Bloc Gutenberg :</strong> dans l'éditeur de page, ajoute un bloc et recherche <strong>"Dahu Booking"</strong>.</li>
+    <div class="dahu-admin-card dahu-admin-card--shortcode">
+        <h2><?php esc_html_e( 'How to display the booking widget', 'dahu-booking' ); ?></h2>
+        <p><?php esc_html_e( 'Two equivalent ways to insert the booking calendar on a page:', 'dahu-booking' ); ?></p>
+        <ul class="dahu-list">
+            <li>
+                <strong><?php esc_html_e( 'Shortcode:', 'dahu-booking' ); ?></strong>
+                <?php esc_html_e( 'paste', 'dahu-booking' ); ?> <code>[dahu_booking]</code> <?php esc_html_e( 'in any page or text widget.', 'dahu-booking' ); ?>
+            </li>
+            <li>
+                <strong><?php esc_html_e( 'Gutenberg block:', 'dahu-booking' ); ?></strong>
+                <?php esc_html_e( 'in the page editor, add a block and search for', 'dahu-booking' ); ?> <strong>"Dahu Booking"</strong>.
+            </li>
         </ul>
     </div>
 
@@ -26,10 +40,10 @@ $dahu_saved_notice = isset( $_GET['saved'] ) ? sanitize_text_field( wp_unslash( 
         <table class="form-table">
 
             <tr>
-                <th scope="row">Jours ouverts</th>
+                <th scope="row"><?php esc_html_e( 'Open days', 'dahu-booking' ); ?></th>
                 <td>
                     <?php foreach ( $dahu_jours_label as $dahu_day_value => $dahu_day_label ) : ?>
-                        <label style="margin-right:14px;">
+                        <label class="dahu-day-label">
                             <input type="checkbox" name="open_days[]" value="<?php echo esc_attr( $dahu_day_value ); ?>"
                                 <?php checked( in_array( $dahu_day_value, $settings['open_days'], true ) ); ?>>
                             <?php echo esc_html( $dahu_day_label ); ?>
@@ -39,65 +53,76 @@ $dahu_saved_notice = isset( $_GET['saved'] ) ? sanitize_text_field( wp_unslash( 
             </tr>
 
             <tr>
-                <th scope="row"><label for="time_slots">Créneaux horaires proposés</label></th>
+                <th scope="row"><label for="time_slots"><?php esc_html_e( 'Available time slots', 'dahu-booking' ); ?></label></th>
                 <td>
-                    <textarea id="time_slots" name="time_slots" rows="8" class="regular-text" style="font-family:monospace;"><?php echo esc_textarea( implode( "\n", $settings['time_slots'] ) ); ?></textarea>
-                    <p class="description">Un horaire par ligne, au format HH:MM (ex: 09:00). Retirez une ligne pour ne plus proposer ce créneau (ex: enlevez 12:00 pour la pause déjeuner).</p>
+                    <textarea id="time_slots" name="time_slots" rows="8" class="regular-text code"><?php echo esc_textarea( implode( "\n", $settings['time_slots'] ) ); ?></textarea>
+                    <p class="description"><?php esc_html_e( 'One time per line, format HH:MM (e.g. 09:00). Remove a line to stop offering that slot.', 'dahu-booking' ); ?></p>
                 </td>
             </tr>
 
             <tr>
-                <th scope="row"><label for="duration">Durée d'un rendez-vous (minutes)</label></th>
+                <th scope="row"><label for="duration"><?php esc_html_e( 'Appointment duration (minutes)', 'dahu-booking' ); ?></label></th>
                 <td><input type="number" id="duration" name="duration" value="<?php echo esc_attr( $settings['duration'] ); ?>" min="15" step="15"></td>
             </tr>
 
             <tr>
-                <th scope="row"><label for="event_title">Titre de l'événement</label></th>
+                <th scope="row"><label for="event_title"><?php esc_html_e( 'Event title', 'dahu-booking' ); ?></label></th>
                 <td><input type="text" id="event_title" name="event_title" value="<?php echo esc_attr( $settings['event_title'] ); ?>" class="regular-text"></td>
             </tr>
 
             <tr>
-                <th scope="row"><label for="location">Lieu du rendez-vous</label></th>
+                <th scope="row"><label for="location"><?php esc_html_e( 'Meeting location', 'dahu-booking' ); ?></label></th>
                 <td><input type="text" id="location" name="location" value="<?php echo esc_attr( $settings['location'] ); ?>" class="regular-text"></td>
             </tr>
 
             <tr>
-                <th scope="row"><label for="admin_email">Email de notification (vous)</label></th>
+                <th scope="row"><label for="admin_email"><?php esc_html_e( 'Notification email (you)', 'dahu-booking' ); ?></label></th>
                 <td><input type="email" id="admin_email" name="admin_email" value="<?php echo esc_attr( $settings['admin_email'] ); ?>" class="regular-text"></td>
             </tr>
 
             <tr>
-                <th scope="row"><label for="min_notice_hours">Délai minimum avant un rendez-vous (heures)</label></th>
+                <th scope="row"><label for="min_notice_hours"><?php esc_html_e( 'Minimum notice before appointment (hours)', 'dahu-booking' ); ?></label></th>
                 <td>
                     <input type="number" id="min_notice_hours" name="min_notice_hours" value="<?php echo esc_attr( $settings['min_notice_hours'] ); ?>" min="0">
-                    <p class="description">Empêche les réservations de dernière minute (ex: 12 = au moins 12h à l'avance).</p>
+                    <p class="description"><?php esc_html_e( 'Prevents last-minute bookings (e.g. 12 = at least 12 hours ahead).', 'dahu-booking' ); ?></p>
                 </td>
             </tr>
 
             <tr>
-                <th scope="row"><label for="max_days_ahead">Réservation possible jusqu'à (jours dans le futur)</label></th>
+                <th scope="row"><label for="max_days_ahead"><?php esc_html_e( 'Bookable period (days in the future)', 'dahu-booking' ); ?></label></th>
                 <td><input type="number" id="max_days_ahead" name="max_days_ahead" value="<?php echo esc_attr( $settings['max_days_ahead'] ); ?>" min="1"></td>
             </tr>
 
             <tr>
-                <th scope="row">Afficher titre/durée/lieu à l'étape 2</th>
+                <th scope="row"><?php esc_html_e( 'Show title/duration/location at step 2', 'dahu-booking' ); ?></th>
                 <td>
                     <label>
                         <input type="checkbox" name="show_meta_step1" value="1" <?php checked( '1', $settings['show_meta_step1'] ); ?>>
-                        Afficher "<?php echo esc_html( $settings['event_title'] ); ?>", la durée et le lieu au-dessus du formulaire de coordonnées
+                        <?php
+                        printf(
+                            /* translators: %s: event title */
+                            esc_html__( 'Show "%s", duration and location above the contact form', 'dahu-booking' ),
+                            esc_html( $settings['event_title'] )
+                        );
+                        ?>
                     </label>
-                    <p class="description">Décoché par défaut. Une fois activé, ce récap apparaît à l'étape 2 (formulaire), sous la date/heure choisie.</p>
+                    <p class="description"><?php esc_html_e( 'Unchecked by default. When enabled, this recap appears at step 2 (the form), below the chosen date/time.', 'dahu-booking' ); ?></p>
                 </td>
             </tr>
 
         </table>
 
-        <h2>CSS personnalisé</h2>
-        <p class="description">Ce CSS est injecté uniquement sur les pages où apparaît le widget de réservation. Utile pour des ajustements visuels fins sans toucher aux fichiers du plugin.</p>
-        <textarea name="custom_css" rows="16" class="large-text" style="font-family:monospace; max-width:900px;" placeholder="/* Exemple :
-.dahu-booking__title { font-size: 1.1rem; }
-*/"><?php echo esc_textarea( $settings['custom_css'] ); ?></textarea>
-
-        <?php submit_button( 'Enregistrer les réglages' ); ?>
+        <?php submit_button( __( 'Save settings', 'dahu-booking' ) ); ?>
     </form>
+
+    <div class="dahu-admin-card dahu-admin-card--customizer">
+        <h2><?php esc_html_e( 'Customize the widget appearance', 'dahu-booking' ); ?></h2>
+        <p><?php esc_html_e( 'To adjust colors, fonts or spacing of the booking widget, use WordPress\'s built-in Additional CSS editor — it is the recommended, site-wide way to add custom styles safely.', 'dahu-booking' ); ?></p>
+        <p>
+            <a href="<?php echo esc_url( admin_url( 'customize.php?autofocus[section]=custom_css' ) ); ?>" class="button button-secondary">
+                <?php esc_html_e( 'Open Additional CSS (Customize)', 'dahu-booking' ); ?>
+            </a>
+        </p>
+        <p class="description"><?php esc_html_e( 'WordPress Additional CSS applies site-wide and is preserved across plugin updates.', 'dahu-booking' ); ?></p>
+    </div>
 </div>

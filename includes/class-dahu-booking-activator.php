@@ -112,10 +112,5 @@ class Dahu_Booking_Activator {
         if ( false === get_option( 'dahu_booking_show_meta_step1' ) ) {
             update_option( 'dahu_booking_show_meta_step1', '0' );
         }
-
-        // CSS personnalisé injecté sur le front
-        if ( false === get_option( 'dahu_booking_custom_css' ) ) {
-            update_option( 'dahu_booking_custom_css', '' );
-        }
     }
 }

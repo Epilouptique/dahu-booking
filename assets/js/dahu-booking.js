@@ -5,8 +5,11 @@
 (function () {
   'use strict';
 
-  const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-  const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  // Month and day names are injected via wp_localize_script for i18n support.
+  const i18n = (typeof dahuBookingData !== 'undefined' && dahuBookingData.i18n) ? dahuBookingData.i18n : {};
+  const MONTHS = i18n.months || ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS   = i18n.days   || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const WEEKDAYS = i18n.weekdays || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
   /**
    * Classe qui encapsule un widget de réservation complet.
@@ -38,6 +41,16 @@
       this.calNext = this.root.querySelector('.dahu-booking__cal-next');
       this.timesDateLabel = this.root.querySelector('.dahu-booking__times-date-label');
       this.timesList = this.root.querySelector('.dahu-booking__times-list');
+
+      // Populate weekday header labels (Mon–Sun) from i18n data.
+      const weekdaysEl = this.root.querySelector('.dahu-booking__cal-weekdays');
+      if (weekdaysEl && weekdaysEl.children.length === 0) {
+        WEEKDAYS.forEach(function (label) {
+          const span = document.createElement('span');
+          span.textContent = label;
+          weekdaysEl.appendChild(span);
+        });
+      }
     }
 
     bindEvents() {
@@ -66,7 +79,7 @@
       const maxDate = new Date(today);
       maxDate.setDate(maxDate.getDate() + (this.options.maxDaysAhead || 60));
 
-      this.calMonthLabel.textContent = MOIS_FR[this.viewMonth] + ' ' + this.viewYear;
+      this.calMonthLabel.textContent = MONTHS[this.viewMonth] + ' ' + this.viewYear;
 
       // Désactive "mois précédent" si on est sur le mois actuel ou avant
       const isCurrentMonth = this.viewYear === today.getFullYear() && this.viewMonth === today.getMonth();
@@ -134,7 +147,7 @@
     }
 
     formatDateLong(dateObj) {
-      return JOURS_FR[dateObj.getDay()] + ' ' + dateObj.getDate() + ' ' + MOIS_FR[dateObj.getMonth()];
+      return DAYS[dateObj.getDay()] + ' ' + dateObj.getDate() + ' ' + MONTHS[dateObj.getMonth()];
     }
 
     /**
@@ -358,7 +371,7 @@
       const message = form.querySelector('#dahu-message').value.trim();
 
       if (!name || !email) {
-        formError.textContent = 'Merci de renseigner votre nom et votre email.';
+        formError.textContent = i18n.error || 'Please provide your name and email.';
         formError.style.display = 'block';
         return;
       }
@@ -447,13 +460,11 @@
             confirmRescheduleBtn.disabled = false;
           },
         });
-        rescheduleWidget.timesList.innerHTML = '<div class="dahu-booking__times-placeholder">Choisissez une date.</div>';
+        rescheduleWidget.timesList.innerHTML = '<div class="dahu-booking__times-placeholder">' + (i18n.pickDate || 'Please choose a date.') + '</div>';
       }
     });
 
     cancelBtn.addEventListener('click', function () {
-      if (!confirm('Confirmez-vous l\'annulation de ce rendez-vous ?')) return;
-
       cancelBtn.disabled = true;
 
       const formData = new FormData();
@@ -465,10 +476,10 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            showResult('Votre rendez-vous a bien été annulé. Vous allez recevoir un email de confirmation.', true);
+            showResult(i18n.cancelSuccess || 'Your appointment has been cancelled. A confirmation email will be sent to you.', true);
             actionsBox.style.display = 'none';
           } else {
-            showResult(data.data.message || 'Une erreur est survenue.', false);
+            showResult(data.data.message || i18n.error || 'An error occurred.', false);
             cancelBtn.disabled = false;
           }
         });
@@ -478,7 +489,7 @@
       if (!rescheduleWidget.selectedDate || !rescheduleWidget.selectedTime) return;
 
       confirmRescheduleBtn.disabled = true;
-      confirmRescheduleBtn.textContent = 'Déplacement en cours...';
+      confirmRescheduleBtn.textContent = i18n.sending || 'Sending…';
 
       const formData = new FormData();
       formData.append('action', 'dahu_reschedule_booking');
@@ -491,13 +502,13 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            showResult('Votre rendez-vous a bien été déplacé. Un email de confirmation vous a été envoyé.', true);
+            showResult(i18n.rescheduleSuccess || 'Your appointment has been rescheduled. A confirmation email will be sent to you.', true);
             rescheduleZone.style.display = 'none';
           } else {
-            const msg = data.data.message === 'slot_taken' ? dahuBookingData.i18n.slotTaken : data.data.message;
+            const msg = data.data.message === 'slot_taken' ? (i18n.slotTaken || 'This slot is no longer available.') : (data.data.message || i18n.error || 'An error occurred.');
             showResult(msg, false);
             confirmRescheduleBtn.disabled = false;
-            confirmRescheduleBtn.textContent = 'Confirmer le nouveau créneau';
+            confirmRescheduleBtn.textContent = i18n.confirmReschedule || 'Confirm new slot';
           }
         });
     });
